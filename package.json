@@ -1,5 +1,5 @@
 {
-  "name": "collateralizable-1400",
+  "name": "CollateralizableToken",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iamchrissmith/collateralizable-1400.git"
+    "url": "git+https://github.com/iamchrissmith/CollateralizableToken.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/iamchrissmith/collateralizable-1400/issues"
+    "url": "https://github.com/iamchrissmith/CollateralizableToken/issues"
   },
-  "homepage": "https://github.com/iamchrissmith/collateralizable-1400#readme",
+  "homepage": "https://github.com/iamchrissmith/CollateralizableToken#readme",
   "dependencies": {
     "truffle": "^5.0.8"
   }
