@@ -28,8 +28,9 @@
 pragma solidity >=0.5 <0.6.0;
 
 import "ds-token/token.sol";
+import "./interfaces/IERC1644.sol";
 
-contract ERC1644 is DSToken {
+contract ERC1644 is IERC1644, DSToken {
 
     address public controller;
 
