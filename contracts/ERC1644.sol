@@ -99,7 +99,7 @@ contract ERC1644 is IERC1644, DSToken {
      * @param _operatorData data attached to the transfer by controller to emit in event. (It is more like a reason string 
      * for calling this function (aka force transfer) which provides the transparency on-chain). 
      */
-    function controllerSend(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
+    function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
         _transfer(_from, _to, _value);
         emit ControllerTransfer(msg.sender, _from, _to, _value, _data, _operatorData);
     }
