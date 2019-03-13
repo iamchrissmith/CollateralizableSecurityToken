@@ -1,11 +1,12 @@
 /// ERC1644.sol
 
 /*
- * This code has not been reviewed, is untested and unaudited.  
- * Not recommended for mainnet. 
- * Use at your own risk!
+ ******************************* IMPORTANT *******************************
+ *       This code has not been reviewed, is untested and unaudited.  
+ *                      Not recommended for mainnet. 
+ *                         Use at your own risk!
+ *************************************************************************
 */
-
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -22,6 +23,7 @@
 
 /// @title Adapted Standard ERC1644 token
 /// @dev https://github.com/SecurityTokenStandard/EIP-Spec/blob/master/contracts/ERC1644/ERC1644.sol
+/// @dev https://github.com/SecurityTokenStandard/EIP-Spec/blob/master/contracts/ERC1644/ERC1644Controllable.sol
 
 pragma solidity >=0.5 <0.6.0;
 
