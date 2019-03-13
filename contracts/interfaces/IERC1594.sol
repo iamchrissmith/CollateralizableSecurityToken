@@ -1,9 +1,14 @@
+/// IERC1594.sol
+
+/// @title IERC1594 Security Token Standard
+/// @dev https://github.com/ethereum/EIPs/issues/1594
+
 pragma solidity >=0.5 <0.6.0;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "erc20/erc20.sol";
 
-contract IERC1594 is IERC20 {
-  // Transfers
+contract IERC1594 is ERC20 {
+    // Transfers
     function transferWithData(address _to, uint256 _value, bytes calldata _data) external;
     function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external;
 

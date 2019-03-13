@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/iamchrissmith/collateralizable-1400#readme",
   "dependencies": {
-    "openzeppelin-solidity": "^2.1.3",
     "truffle": "^5.0.8"
   }
 }
