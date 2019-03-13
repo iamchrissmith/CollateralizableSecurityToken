@@ -1,11 +1,15 @@
-/// CollateralizableToken.sol
+/// SecurityToken.sol
+
+/// TODOS:
+/// [ ] Convert Transfer functions to here and in ERC1644 to use DSToken transfer signatures
+/// [ ] Utilize DSAuth to create a whitelist that validates transfers, transferFroms, controllerTransfers, Redeems? Mints?
+/// [ ] Tests to show functionality working
 
 /*
  * This code has not been reviewed, is untested and unaudited.  
  * Not recommended for mainnet. 
  * Use at your own risk!
 */
-
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -25,6 +29,6 @@ pragma solidity >=0.5.0;
 import "./ERC1644.sol";
 import "./ERC1594.sol";
 
-contract SecurityToken is IERC1644, IERC1594 {
+contract SecurityToken is ERC1644, ERC1594 {
 
 }
