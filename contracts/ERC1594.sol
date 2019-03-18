@@ -29,7 +29,7 @@ pragma solidity >=0.5 <0.6.0;
 import "ds-token/token.sol";
 import "./interfaces/IERC1594.sol";
 
-contract ERC1594 is IERC1594, DSToken {
+contract ERC1594 is DSToken, IERC1594 {
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
@@ -37,7 +37,10 @@ contract ERC1594 is IERC1594, DSToken {
     bool internal issuance = true;
 
     /// Constructor
-    constructor() public  {
+    constructor(bytes32 _symbol)
+        public
+        DSToken(_symbol)
+    {
 
     }
 

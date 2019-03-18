@@ -2,8 +2,8 @@
 
 /*
  ******************************* IMPORTANT *******************************
- *       This code has not been reviewed, is untested and unaudited.  
- *                      Not recommended for mainnet. 
+ *       This code has not been reviewed, is untested and unaudited.
+ *                      Not recommended for mainnet.
  *                         Use at your own risk!
  *************************************************************************
 */
@@ -27,10 +27,10 @@
 
 pragma solidity >=0.5 <0.6.0;
 
-import "ds-token/token.sol";
+import "./ERC1594.sol";
 import "./interfaces/IERC1644.sol";
 
-contract ERC1644 is IERC1644, DSToken {
+contract ERC1644 is ERC1594, IERC1644 {
 
     address public controller;
 
@@ -52,7 +52,7 @@ contract ERC1644 is IERC1644, DSToken {
         bytes _operatorData
     );
 
-    // Modifier to check whether the msg.sender is authorised or not 
+    // Modifier to check whether the msg.sender is authorised or not
     modifier onlyController() {
         require(msg.sender == controller, "Not Authorised");
         _;
@@ -61,13 +61,16 @@ contract ERC1644 is IERC1644, DSToken {
 
     // Controller Operation
     /**
-     * @notice constructor 
-     * @dev Used to intialize the controller variable. 
+     * @notice constructor
+     * @dev Used to intialize the controller variable.
      * `_controller` it can be zero address as well it means
      * controller functions will revert
      * @param _controller Address of the controller delegated by the issuer
      */
-    constructor(address _controller) public {
+    constructor(address _controller, bytes32 _symbol)
+        public
+        ERC1594(symbol_)
+    {
         // Below condition is to restrict the owner/issuer to become the controller as well in ideal world.
         // But for non ideal case issuer could set another address which is not the owner of the token
         // but issuer holds its private key.
@@ -96,8 +99,8 @@ contract ERC1644 is IERC1644, DSToken {
      * @param _value uint256 the amount of tokens to be transferred
      * @param _data data to validate the transfer. (It is not used in this reference implementation
      * because use of `_data` parameter is implementation specific).
-     * @param _operatorData data attached to the transfer by controller to emit in event. (It is more like a reason string 
-     * for calling this function (aka force transfer) which provides the transparency on-chain). 
+     * @param _operatorData data attached to the transfer by controller to emit in event. (It is more like a reason string
+     * for calling this function (aka force transfer) which provides the transparency on-chain).
      */
     function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
         _transfer(_from, _to, _value);
@@ -113,8 +116,8 @@ contract ERC1644 is IERC1644, DSToken {
      * @param _value uint256 the amount of tokens need to be redeemed.
      * @param _data data to validate the transfer. (It is not used in this reference implementation
      * because use of `_data` parameter is implementation specific).
-     * @param _operatorData data attached to the transfer by controller to emit in event. (It is more like a reason string 
-     * for calling this function (aka force transfer) which provides the transparency on-chain). 
+     * @param _operatorData data attached to the transfer by controller to emit in event. (It is more like a reason string
+     * for calling this function (aka force transfer) which provides the transparency on-chain).
      */
     function controllerRedeem(address _tokenHolder, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
         _burn(_tokenHolder, _value);
