@@ -69,7 +69,7 @@ contract ERC1644 is ERC1594, IERC1644 {
      */
     constructor(address _controller, bytes32 _symbol)
         public
-        ERC1594(symbol_)
+        ERC1594(_symbol)
     {
         // Below condition is to restrict the owner/issuer to become the controller as well in ideal world.
         // But for non ideal case issuer could set another address which is not the owner of the token
@@ -103,7 +103,7 @@ contract ERC1644 is ERC1594, IERC1644 {
      * for calling this function (aka force transfer) which provides the transparency on-chain).
      */
     function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
-        _transfer(_from, _to, _value);
+        transferFrom(_from, _to, _value);
         emit ControllerTransfer(msg.sender, _from, _to, _value, _data, _operatorData);
     }
 
@@ -120,7 +120,7 @@ contract ERC1644 is ERC1594, IERC1644 {
      * for calling this function (aka force transfer) which provides the transparency on-chain).
      */
     function controllerRedeem(address _tokenHolder, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
-        _burn(_tokenHolder, _value);
+        burn(_tokenHolder, _value);
         emit ControllerRedemption(msg.sender, _tokenHolder, _value, _data, _operatorData);
     }
 

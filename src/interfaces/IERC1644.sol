@@ -5,9 +5,7 @@
 
 pragma solidity >=0.5 <0.6.0;
 
-import "ds-token/token.sol";
-
-contract IERC1644 is DSToken {
+contract IERC1644 {
     // Controller Operation
     function isControllable() external view returns (bool);
     function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external;

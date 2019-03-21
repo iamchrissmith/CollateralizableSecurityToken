@@ -5,9 +5,7 @@
 
 pragma solidity >=0.5 <0.6.0;
 
-import "ds-token/token.sol";
-
-contract IERC1594 is DSToken {
+contract IERC1594{
     // Transfers
     function transferWithData(address _to, uint256 _value, bytes calldata _data) external;
     function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external;

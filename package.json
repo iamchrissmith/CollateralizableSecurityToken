@@ -16,7 +16,5 @@
     "url": "https://github.com/iamchrissmith/CollateralizableToken/issues"
   },
   "homepage": "https://github.com/iamchrissmith/CollateralizableToken#readme",
-  "dependencies": {
-    "truffle": "^5.0.8"
-  }
+  "dependencies": {}
 }
