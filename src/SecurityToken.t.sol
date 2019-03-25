@@ -70,8 +70,7 @@ contract SecurityTokenTest is customTest, DSTest {
         token.mint(initialBalance);
         user2 = address(new TokenUser(token));
         self = address(this);
-        uint result = token.rely(self);
-        emit log_named_uint("token address", result);
+        token.rely(self);
         bool hope = token.hope(self);
         emit eventListener(self, hope);
     }

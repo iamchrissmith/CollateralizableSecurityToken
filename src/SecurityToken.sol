@@ -39,7 +39,7 @@ contract SecurityToken is ERC1644 {
     function hope(address usr) public view returns (bool) { wards[usr] == 1; }
     function nope(address usr) public view returns (bool) { wards[usr] == 0; }
 
-    function rely(address usr) public note auth returns (uint) { return wards[usr] = 1; }
+    function rely(address usr) public note auth { wards[usr] = 1; }
     function deny(address usr) public auth { wards[usr] = 0; }
 
     /**
