@@ -24,27 +24,84 @@ pragma solidity >=0.5.0;
 import "./SecurityToken.sol";
 import "ds-test/test.sol";
 
-contract TokenUser {}
+contract TokenUser {
+    DSToken  token;
+
+    constructor(DSToken token_) public {
+        token = token_;
+    }
+
+    function doTransferFrom(address from, address to, uint amount)
+        public
+        returns (bool)
+    {
+        return token.transferFrom(from, to, amount);
+    }
+
+    function doTransfer(address to, uint amount)
+        public
+        returns (bool)
+    {
+        return token.transfer(to, amount);
+    }
+
+}
 contract TokenController {}
 
+contract customTest {
+    event log_named_bytes1 (bytes32 key, bytes1 val);
+}
 
-contract SecurityTokenTest is DSTest {
+
+contract SecurityTokenTest is customTest, DSTest {
+    uint constant initialBalance = 1000;
+
     SecurityToken token;
     address user1;
+    address user2;
     address controller;
     address self;
+    bytes32 symbol = "TST";
 
     function setUp() public {
-        user1 = address(new TokenUser());
         controller = address(new TokenController());
         token = createToken();
+        user1 = address(new TokenUser(token));
+        token.mint(initialBalance);
+        user2 = address(new TokenUser(token));
+        self = address(this);
     }
 
     function createToken() internal returns (SecurityToken) {
-        return new SecurityToken(controller, "TST");
+        return new SecurityToken(controller, symbol);
     }
 
-    function testSetupPrecondition() public {
+    function testSetupPreconditions() public {
         assertEq(token.controller(), controller);
+        assertEq(token.symbol(), symbol);
+        assertEq(token.balanceOf(self), initialBalance);
+    }
+
+    function testValidTransfers() public logs_gas {
+        uint sentAmount = 250;
+        emit log_named_address("token address", address(token));
+        emit log_named_uint("token address", token.totalSupply());
+        emit log_named_uint("token balance user1", token.balanceOf(user1));
+        emit log_named_uint("token balance user2", token.balanceOf(user2));
+
+        token.transfer(user2, sentAmount);
+        assertEq(token.balanceOf(user2), sentAmount);
+        assertEq(token.balanceOf(self), initialBalance - sentAmount);
+    }
+
+    function testRejectCanTransferFromBadSender() public logs_gas {
+        // calling canTransfer when the sender is not on the whitelist
+        // should result in false, 0x56, 0x00
+        bytes1 expectedCode = 0x56;
+        (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user1, 1, "");
+        emit log_named_bytes1("code", code);
+        assertTrue(!result);
+        assertEq32(bytes32(code), bytes32(expectedCode));
+        assertEq32(appCode, bytes32(0));
     }
 }

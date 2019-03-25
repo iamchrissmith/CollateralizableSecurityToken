@@ -30,6 +30,7 @@ import "ds-token/token.sol";
 import "./interfaces/IERC1594.sol";
 
 contract ERC1594 is DSToken, IERC1594 {
+    event log_data(bytes32 func, bytes data);
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
@@ -40,9 +41,7 @@ contract ERC1594 is DSToken, IERC1594 {
     constructor(bytes32 _symbol)
         public
         DSToken(_symbol)
-    {
-
-    }
+    {}
 
     /**
      * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
@@ -57,6 +56,7 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function transferWithData(address _to, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
+        emit log_data("transferWithData", _data);
         transferFrom(msg.sender, _to, _value);
     }
 
@@ -75,6 +75,7 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
+        emit log_data("transferFromWithData", _data);
         transferFrom(_from, _to, _value);
     }
 
@@ -100,6 +101,7 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external auth {
         // Add a function to validate the `_data` parameter
+        emit log_data("issue", _data);
         require(issuance, "Issuance is closed");
         mint(_tokenHolder, _value);
         emit Issued(msg.sender, _tokenHolder, _value, _data);
@@ -114,6 +116,7 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function redeem(uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
+        emit log_data("redeem", _data);
         burn(msg.sender, _value);
         emit Redeemed(address(0), msg.sender, _value, _data);
     }
@@ -129,6 +132,7 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function redeemFrom(address _tokenHolder, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
+        emit log_data("redeemFrom", _data);
         burn(_tokenHolder, _value);
         emit Redeemed(msg.sender, _tokenHolder, _value, _data);
     }
@@ -145,6 +149,7 @@ contract ERC1594 is DSToken, IERC1594 {
      * @return bytes32 Application specific reason code
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
+
         // Add a function to validate the `_data` parameter
         // if (_balances[msg.sender] < _value)
         //     return (false, 0x52, bytes32(0));
@@ -154,7 +159,7 @@ contract ERC1594 is DSToken, IERC1594 {
 
         // else if (!KindMath.checkAdd(_balances[_to], _value))
         //     return (false, 0x50, bytes32(0));
-        // return (true, 0x51, bytes32(0));
+        return (true, 0x51, bytes32(0));
     }
 
     /**
@@ -182,6 +187,6 @@ contract ERC1594 is DSToken, IERC1594 {
 
         // else if (!KindMath.checkAdd(_balances[_to], _value))
         //     return (false, 0x50, bytes32(0));
-        // return (true, 0x51, bytes32(0));
+        return (true, 0x51, bytes32(0));
     }
 }
