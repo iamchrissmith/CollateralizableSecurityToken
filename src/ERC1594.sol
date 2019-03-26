@@ -84,6 +84,7 @@ contract ERC1594 is DSToken, IERC1594 {
     }
 
     /**
+     * THIS FUNCTION IS UNNECESSARY FOR TESTING PURPOSES
      * @notice This function must be called to increase the total supply (Corresponds to mint function of ERC20).
      * @dev It only be called by the token issuer or the operator defined by the issuer. ERC1594 doesn't have
      * have the any logic related to operator but its superset ERC1400 have the operator logic and this function
@@ -92,15 +93,16 @@ contract ERC1594 is DSToken, IERC1594 {
      * @param _value The amount of tokens need to be issued
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
-    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external auth {
+    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
-        emit log_data("issue", _data);
-        require(issuance, "Issuance is closed");
-        mint(_tokenHolder, _value);
-        emit Issued(msg.sender, _tokenHolder, _value, _data);
+        // emit log_data("issue", _data);
+        // require(issuance, "Issuance is closed");
+        // mint(_tokenHolder, _value);
+        // emit Issued(msg.sender, _tokenHolder, _value, _data);
     }
 
     /**
+     * THIS FUNCTION IS UNNECESSARY FOR TESTING PURPOSES
      * @notice This function redeem an amount of the token of a msg.sender. For doing so msg.sender may incentivize
      * using different ways that could be implemented with in the `redeem` function definition. But those implementations
      * are out of the scope of the ERC1594.
@@ -109,12 +111,13 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function redeem(uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
-        emit log_data("redeem", _data);
-        burn(msg.sender, _value);
-        emit Redeemed(address(0), msg.sender, _value, _data);
+        // emit log_data("redeem", _data);
+        // burn(msg.sender, _value);
+        // emit Redeemed(address(0), msg.sender, _value, _data);
     }
 
     /**
+     * THIS FUNCTION IS UNNECESSARY FOR TESTING PURPOSES
      * @notice This function redeem an amount of the token of a msg.sender. For doing so msg.sender may incentivize
      * using different ways that could be implemented with in the `redeem` function definition. But those implementations
      * are out of the scope of the ERC1594.
@@ -125,9 +128,9 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function redeemFrom(address _tokenHolder, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
-        emit log_data("redeemFrom", _data);
-        burn(_tokenHolder, _value);
-        emit Redeemed(msg.sender, _tokenHolder, _value, _data);
+        // emit log_data("redeemFrom", _data);
+        // burn(_tokenHolder, _value);
+        // emit Redeemed(msg.sender, _tokenHolder, _value, _data);
     }
 
     /**
