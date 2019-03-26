@@ -55,14 +55,18 @@ contract SecurityToken is ERC1644 {
         return transfer(dst, wad, "");
     }
 
-    function transferFrom(address src, address dst, uint wad) public returns (bool) {
-        return transferFrom(src, dst, wad, "");
+    /**
+     * @notice See ERC1594.sol for detailed comments
+     */
+    function transferWithData(address _to, uint256 _value, bytes calldata _data) external returns (bool) {
+        return transfer(_to, _value, _data);
     }
 
     function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
         (bool can, byte code, bytes32 appCode) = _canTransferFrom(msg.sender, dst, wad, _data);
         if (can) {
-            return _transferWithData(dst, wad, _data);
+            emit log_data("transferWithData", _data);
+            return super.transferFrom(msg.sender, dst, wad);
         } else {
             emit TransferFailure(
                 msg.sender,
@@ -77,10 +81,22 @@ contract SecurityToken is ERC1644 {
         }
     }
 
+    function transferFrom(address src, address dst, uint wad) public returns (bool) {
+        return transferFrom(src, dst, wad, "");
+    }
+
+    /**
+     * @notice See ERC1594.sol for detailed comments
+     */
+    function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external returns (bool) {
+        return transferFrom(_from, _to, _value, _data);
+    }
+
     function transferFrom(address src, address dst, uint wad, bytes memory _data) public returns (bool) {
         (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, _data);
         if (can) {
-            return _transferFromWithData(src, dst, wad, _data);
+            emit log_data("transferFromWithData", _data);
+            return super.transferFrom(src, dst, wad);
         } else {
             emit TransferFailure(
                 src,
@@ -96,37 +112,14 @@ contract SecurityToken is ERC1644 {
     }
 
     /**
-     * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
-     * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
-     * with a reson string to understand the failure cause, table of Ethereum status code will always reside off-chain
-     *
-     * This implimentation uses a simple whitelist to check that the _from and the _to are whitelisted to trade the token
-     *
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
-     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     * @return bool It signifies whether the transaction will be executed or not.
-     * @return byte Ethereum status code (ESC)
-     * @return bytes32 Application specific reason code
+     * @notice See ERC1594.sol for detailed comments
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         return _canTransferFrom(msg.sender, _to, _value, _data);
     }
 
     /**
-     * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
-     * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
-     * with a reson string to understand the failure cause, table of Ethereum status code will always reside off-chain
-     *
-     * This implimentation uses a simple whitelist to check that the _from and the _to are whitelisted to trade the token
-     *
-     * @param _from address The address which you want to transfer from
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
-     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     * @return bool It signifies whether the transaction will be executed or not.
-     * @return byte Ethereum status code (ESC)
-     * @return bytes32 Application specific reason code
+     * @notice See ERC1594.sol for detailed comments
      */
     function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         return _canTransferFrom(_from, _to, _value, _data);

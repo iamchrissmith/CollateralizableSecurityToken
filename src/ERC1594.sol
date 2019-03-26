@@ -54,15 +54,8 @@ contract ERC1594 is DSToken, IERC1594 {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferWithData(address _to, uint256 _value, bytes calldata _data) external returns (bool) {
-        return _transferWithData(_to, _value, _data);
-    }
+    function transferWithData(address _to, uint256 _value, bytes calldata _data) external returns (bool);
 
-    function _transferWithData(address _to, uint256 _value, bytes memory _data) internal returns (bool) {
-        // Add a function to validate the `_data` parameter
-        emit log_data("transferWithData", _data);
-        return super.transferFrom(msg.sender, _to, _value);
-    }
 
     /**
      * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
@@ -77,15 +70,7 @@ contract ERC1594 is DSToken, IERC1594 {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external returns (bool) {
-        return _transferFromWithData(_from, _to, _value, _data);
-    }
-
-    function _transferFromWithData(address _from, address _to, uint256 _value, bytes memory _data) internal returns (bool) {
-        // Add a function to validate the `_data` parameter
-        emit log_data("transferFromWithData", _data);
-        return super.transferFrom(_from, _to, _value);
-    }
+    function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external returns (bool);
 
     /**
      * @notice A security token issuer can specify that issuance has finished for the token
@@ -144,4 +129,37 @@ contract ERC1594 is DSToken, IERC1594 {
         burn(_tokenHolder, _value);
         emit Redeemed(msg.sender, _tokenHolder, _value, _data);
     }
+
+    /**
+     * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
+     * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
+     * with a reson string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     *
+     * This implimentation uses a simple whitelist to check that the _from and the _to are whitelisted to trade the token
+     *
+     * @param _to address The address which you want to transfer to
+     * @param _value uint256 the amount of tokens to be transferred
+     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
+     * @return bool It signifies whether the transaction will be executed or not.
+     * @return byte Ethereum status code (ESC)
+     * @return bytes32 Application specific reason code
+     */
+    function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32);
+
+    /**
+     * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
+     * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
+     * with a reson string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     *
+     * This implimentation uses a simple whitelist to check that the _from and the _to are whitelisted to trade the token
+     *
+     * @param _from address The address which you want to transfer from
+     * @param _to address The address which you want to transfer to
+     * @param _value uint256 the amount of tokens to be transferred
+     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
+     * @return bool It signifies whether the transaction will be executed or not.
+     * @return byte Ethereum status code (ESC)
+     * @return bytes32 Application specific reason code
+     */
+    function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32);
 }
