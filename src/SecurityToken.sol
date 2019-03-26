@@ -1,7 +1,6 @@
 /// SecurityToken.sol
 
 /// TODOS:
-/// [ ] Tests to show functionality working
 /// [ ] Utilize DSAuth to create a whitelist that validates transfers, transferFroms, controllerTransfers, Redeems? Mints?
 
 /*
@@ -57,7 +56,7 @@ contract SecurityToken is ERC1644 {
     }
 
     function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
-        (bool can, byte code, bytes32 appCode) = canTransferFrom(msg.sender, dst, wad, _data);
+        (bool can, byte code, bytes32 appCode) = _canTransferFrom(msg.sender, dst, wad, _data);
         if (can) {
             return _transferWithData(dst, wad, _data);
         } else {
@@ -89,7 +88,7 @@ contract SecurityToken is ERC1644 {
      * @return bytes32 Application specific reason code
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
-        return canTransferFrom(msg.sender, _to, _value, _data);
+        return _canTransferFrom(msg.sender, _to, _value, _data);
     }
 
     /**
@@ -107,7 +106,11 @@ contract SecurityToken is ERC1644 {
      * @return byte Ethereum status code (ESC)
      * @return bytes32 Application specific reason code
      */
-    function canTransferFrom(address _from, address _to, uint256 _value, bytes memory _data) public view returns (bool, byte, bytes32) {
+    function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
+        return _canTransferFrom(_from, _to, _value, _data);
+    }
+
+    function _canTransferFrom(address _from, address _to, uint256 _value, bytes memory _data) internal view returns (bool, byte, bytes32) {
         if (nope(_from)) {
             // 0x56 - Invalid Sender
             return (false, 0x56, bytes32(0));
