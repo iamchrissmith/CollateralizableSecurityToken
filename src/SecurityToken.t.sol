@@ -127,16 +127,14 @@ contract SecurityTokenTest is customTest, DSTest {
     function testValidTransfers() public logs_gas {
         // transfer between two valid participants should succeed
         uint sentAmount = 250;
-        emit log_named_address("token address", address(token));
-        emit log_named_uint("token address", token.totalSupply());
-        emit log_named_uint("token balance user1", token.balanceOf(user1));
-        emit log_named_uint("token balance user2", token.balanceOf(user2));
 
+        token.rely(user1);
         bool hopeUser = token.hope(user1);
         assertTrue(hopeUser);
         bool hopeSelf = token.hope(self);
         assertTrue(hopeSelf);
-        token.transfer(user1, sentAmount);
+        bool result = token.transfer(user1, sentAmount);
+        assertTrue(result);
         assertEq(token.balanceOf(user1), sentAmount);
         assertEq(token.balanceOf(self), initialBalance - sentAmount);
     }
@@ -146,13 +144,15 @@ contract SecurityTokenTest is customTest, DSTest {
         uint sentAmount = 250;
 
         token.deny(self);
-        bool hopeUser = token.hope(user1);
-        assertTrue(hopeUser);
+        token.rely(user1);
         bool nopeSelf = token.nope(self);
         assertTrue(nopeSelf);
-        token.transfer(user1, sentAmount);
-        assertEq(token.balanceOf(user1), sentAmount);
-        assertEq(token.balanceOf(self), initialBalance - sentAmount);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
+        bool result = token.transfer(user1, sentAmount);
+        assertTrue(!result);
+        assertEq(token.balanceOf(user1), 0);
+        assertEq(token.balanceOf(self), initialBalance);
     }
 
     function testInvalidTransfersRecipient() public logs_gas {
@@ -165,8 +165,9 @@ contract SecurityTokenTest is customTest, DSTest {
         assertTrue(nopeUser);
         bool hopeSelf = token.hope(self);
         assertTrue(hopeSelf);
-        token.transfer(user1, sentAmount);
-        assertEq(token.balanceOf(user1), sentAmount);
-        assertEq(token.balanceOf(self), initialBalance - sentAmount);
+        bool result = token.transfer(user1, sentAmount);
+        assertTrue(!result);
+        assertEq(token.balanceOf(user1), 0);
+        assertEq(token.balanceOf(self), initialBalance);
     }
 }

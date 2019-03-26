@@ -29,12 +29,6 @@ import "./ERC1644.sol";
 
 contract SecurityToken is ERC1644 {
 
-
-    constructor(address _controller, bytes32 _symbol)
-        ERC1644(_controller, _symbol)
-        public
-    {}
-
     mapping (address => uint) public wards;
 
     function hope(address usr) public view returns (bool) { return wards[usr] == 1; }
@@ -42,6 +36,43 @@ contract SecurityToken is ERC1644 {
 
     function rely(address usr) public auth { wards[usr] = 1; }
     function deny(address usr) public auth { wards[usr] = 0; }
+
+    event TransferFailure(
+        address indexed src,
+        address indexed dst,
+        uint wad,
+        bool status,
+        byte code,
+        bytes32 appCode,
+        bytes _data
+    );
+
+    constructor(address _controller, bytes32 _symbol)
+        ERC1644(_controller, _symbol)
+        public
+    {}
+
+    function transfer(address dst, uint wad) public returns (bool) {
+        return transfer(dst, wad, "");
+    }
+
+    function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
+        (bool can, byte code, bytes32 appCode) = canTransfer(msg.sender, dst, wad, _data);
+        if (!can) {
+            emit TransferFailure(
+                msg.sender,
+                dst,
+                wad,
+                can,
+                code,
+                appCode,
+                _data
+            );
+            return can;
+        } else {
+            return transferFrom(msg.sender, dst, wad);
+        }
+    }
 
     /**
      * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
