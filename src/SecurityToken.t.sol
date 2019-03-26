@@ -93,7 +93,7 @@ contract SecurityTokenTest is customTest, DSTest {
         bytes1 expectedCode = 0x56;
         bool nope = token.nope(user1);
         assertTrue(nope);
-        (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user1, user2, 1, "");
+        (bool result, bytes1 code, bytes32 appCode) = token.canTransferFrom(user1, user2, 1, "");
         assertTrue(!result);
         assertEq(code, expectedCode);
         assertEq32(appCode, bytes32(0));
@@ -105,7 +105,7 @@ contract SecurityTokenTest is customTest, DSTest {
         bytes1 expectedCode = 0x57;
         bool nope = token.nope(user2);
         assertTrue(nope);
-        (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(self, user2, 1, "");
+        (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user2, 1, "");
         assertTrue(!result);
         assertEq(code, expectedCode);
         assertEq32(appCode, bytes32(0));

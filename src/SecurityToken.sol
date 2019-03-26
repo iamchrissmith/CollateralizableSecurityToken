@@ -57,7 +57,7 @@ contract SecurityToken is ERC1644 {
     }
 
     function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
-        (bool can, byte code, bytes32 appCode) = canTransfer(msg.sender, dst, wad, _data);
+        (bool can, byte code, bytes32 appCode) = canTransferFrom(msg.sender, dst, wad, _data);
         if (can) {
             return _transferWithData(dst, wad, _data);
         } else {
@@ -89,7 +89,7 @@ contract SecurityToken is ERC1644 {
      * @return bytes32 Application specific reason code
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
-        return canTransfer(msg.sender, _to, _value, _data);
+        return canTransferFrom(msg.sender, _to, _value, _data);
     }
 
     /**
@@ -107,36 +107,7 @@ contract SecurityToken is ERC1644 {
      * @return byte Ethereum status code (ESC)
      * @return bytes32 Application specific reason code
      */
-    function canTransfer(address _from, address _to, uint256 _value, bytes memory _data) public view returns (bool, byte, bytes32) {
-        if (nope(_from)) {
-            // 0x56 - Invalid Sender
-            return (false, 0x56, bytes32(0));
-        }
-
-        if (nope(_to)) {
-            // 0x57 - Invalid Reciever
-            return (false, 0x57, bytes32(0));
-        }
-
-        return (true, 0x51, bytes32(0));
-    }
-
-    /**
-     * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
-     * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
-     * with a reson string to understand the failure cause, table of Ethereum status code will always reside off-chain
-     *
-     * This implimentation uses a simple whitelist to check that the _from and the _to are whitelisted to trade the token
-     *
-     * @param _from address The address which you want to send tokens from
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
-     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     * @return bool It signifies whether the transaction will be executed or not.
-     * @return byte Ethereum status code (ESC)
-     * @return bytes32 Application specific reason code
-     */
-    function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
+    function canTransferFrom(address _from, address _to, uint256 _value, bytes memory _data) public view returns (bool, byte, bytes32) {
         if (nope(_from)) {
             // 0x56 - Invalid Sender
             return (false, 0x56, bytes32(0));
