@@ -29,17 +29,18 @@ import "./ERC1644.sol";
 
 contract SecurityToken is ERC1644 {
 
-    mapping (address => uint) public wards;
 
     constructor(address _controller, bytes32 _symbol)
         ERC1644(_controller, _symbol)
         public
     {}
 
-    function hope(address usr) public view returns (bool) { wards[usr] == 1; }
-    function nope(address usr) public view returns (bool) { wards[usr] == 0; }
+    mapping (address => uint) public wards;
 
-    function rely(address usr) public note auth { wards[usr] = 1; }
+    function hope(address usr) public view returns (bool) { return wards[usr] == 1; }
+    function nope(address usr) public view returns (bool) { return wards[usr] == 0; }
+
+    function rely(address usr) public auth { wards[usr] = 1; }
     function deny(address usr) public auth { wards[usr] = 0; }
 
     /**

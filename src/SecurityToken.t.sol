@@ -71,8 +71,6 @@ contract SecurityTokenTest is customTest, DSTest {
         user2 = address(new TokenUser(token));
         self = address(this);
         token.rely(self);
-        bool hope = token.hope(self);
-        emit eventListener(self, hope);
     }
 
     function createToken() internal returns (SecurityToken) {
@@ -85,34 +83,61 @@ contract SecurityTokenTest is customTest, DSTest {
         assertEq(token.balanceOf(self), initialBalance);
         assertEq(token.owner(), self);
         assertTrue(token.hope(self));
-        // assertTrue(!token.hope(user1));
-        // assertTrue(!token.hope(user2));
+        assertTrue(!token.hope(user1));
+        assertTrue(!token.hope(user2));
+    }
+
+    function testRejectCanTransferFromBadSender() public logs_gas {
+        // calling canTransfer when the sender is not on the whitelist
+        // should result in false, 0x56, 0x00
+        bytes1 expectedCode = 0x56;
+        bool nope = token.nope(user1);
+        assertTrue(nope);
+        (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user1, user2, 1, "");
+        assertTrue(!result);
+        assertEq(code, expectedCode);
+        assertEq32(appCode, bytes32(0));
+    }
+
+    function testRejectCanTransferForBadRecipient() public logs_gas {
+        // calling canTransfer when the recipient is not on the whitelist
+        // should result in false, 0x57, 0x00
+        bytes1 expectedCode = 0x57;
+        bool nope = token.nope(user2);
+        assertTrue(nope);
+        (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(self, user2, 1, "");
+        assertTrue(!result);
+        assertEq(code, expectedCode);
+        assertEq32(appCode, bytes32(0));
+    }
+
+    function testPassCanTransferForGoodToFrom() public logs_gas {
+        // calling canTransfer when the sender and recipient are on the whitelist
+        // should result in true, 0x51, 0x00
+        bytes1 expectedCode = 0x51;
+        token.rely(user1);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
+        (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user1, 1, "");
+        assertTrue(result);
+        assertEq(code, expectedCode);
+        assertEq32(appCode, bytes32(0));
     }
 
     function testValidTransfers() public logs_gas {
+        // transfer between two valid participants should succeed
         uint sentAmount = 250;
         emit log_named_address("token address", address(token));
         emit log_named_uint("token address", token.totalSupply());
         emit log_named_uint("token balance user1", token.balanceOf(user1));
         emit log_named_uint("token balance user2", token.balanceOf(user2));
 
-        token.transfer(user2, sentAmount);
-        assertEq(token.balanceOf(user2), sentAmount);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
+        bool hopeSelf = token.hope(self);
+        assertTrue(hopeSelf);
+        token.transfer(user1, sentAmount);
+        assertEq(token.balanceOf(user1), sentAmount);
         assertEq(token.balanceOf(self), initialBalance - sentAmount);
     }
-
-    // function testRejectCanTransferFromBadSender() public logs_gas {
-    //     // calling canTransfer when the sender is not on the whitelist
-    //     // should result in false, 0x56, 0x00
-
-    //     bytes1 expectedCode = bytes1(0x51);
-    //     bool nope = token.nope(user1);
-    //     assertTrue(nope);
-    //     bool hope = token.hope(user1);
-    //     assertTrue(hope);
-    //     (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user1, user2, 1, "");
-    //     assertTrue(result);
-    //     assertEq32(bytes32(code), bytes32(expectedCode));
-    //     assertEq32(appCode, bytes32(0));
-    // }
 }
