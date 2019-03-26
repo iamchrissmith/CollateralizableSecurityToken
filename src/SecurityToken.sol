@@ -59,7 +59,7 @@ contract SecurityToken is ERC1644 {
     function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
         (bool can, byte code, bytes32 appCode) = canTransfer(msg.sender, dst, wad, _data);
         if (can) {
-            return transferFrom(msg.sender, dst, wad);
+            return _transferWithData(dst, wad, _data);
         } else {
             emit TransferFailure(
                 msg.sender,
