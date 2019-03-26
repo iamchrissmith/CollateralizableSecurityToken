@@ -64,12 +64,6 @@ contract ERC1594 is DSToken, IERC1594 {
         return transferFrom(msg.sender, _to, _value);
     }
 
-    function _transferFromWithData(address _from, address _to, uint256 _value, bytes memory _data) internal returns (bool) {
-        // Add a function to validate the `_data` parameter
-        emit log_data("transferFromWithData", _data);
-        return transferFrom(_from, _to, _value);
-    }
-
     /**
      * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
      * However for many types of approved transfers, maintaining an on-chain list of approved transfers can be
@@ -85,6 +79,12 @@ contract ERC1594 is DSToken, IERC1594 {
      */
     function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external returns (bool) {
         return _transferFromWithData(_from, _to, _value, _data);
+    }
+
+    function _transferFromWithData(address _from, address _to, uint256 _value, bytes memory _data) internal returns (bool) {
+        // Add a function to validate the `_data` parameter
+        emit log_data("transferFromWithData", _data);
+        return transferFrom(_from, _to, _value);
     }
 
     /**
