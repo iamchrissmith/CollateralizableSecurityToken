@@ -25,9 +25,9 @@ import "./SecurityToken.sol";
 import "ds-test/test.sol";
 
 contract TokenUser {
-    DSToken  token;
+    SecurityToken  token;
 
-    constructor(DSToken token_) public {
+    constructor(SecurityToken token_) public {
         token = token_;
     }
 
@@ -43,6 +43,21 @@ contract TokenUser {
         returns (bool)
     {
         return token.transfer(to, amount);
+    }
+
+    function doApprove(address recipient, uint amount)
+        public
+        returns (bool)
+    {
+        return token.approve(recipient, amount);
+    }
+
+    function doCanTransfer(address to, uint amount, bytes memory data)
+        public
+        view
+        returns (bool, byte, bytes32)
+    {
+        return token.canTransfer(to, amount, data);
     }
 
 }
@@ -87,13 +102,13 @@ contract SecurityTokenTest is customTest, DSTest {
         assertTrue(!token.hope(user2));
     }
 
-    function testRejectCanTransferFromBadSender() public logs_gas {
+    function testRejectCanTransferBadSender() public logs_gas {
         // calling canTransfer when the sender is not on the whitelist
         // should result in false, 0x56, 0x00
         bytes1 expectedCode = 0x56;
         bool nope = token.nope(user1);
         assertTrue(nope);
-        (bool result, bytes1 code, bytes32 appCode) = token.canTransferFrom(user1, user2, 1, "");
+        (bool result, bytes1 code, bytes32 appCode) = TokenUser(user1).doCanTransfer(user2, 1, "");
         assertTrue(!result);
         assertEq(code, expectedCode);
         assertEq32(appCode, bytes32(0));
@@ -124,7 +139,7 @@ contract SecurityTokenTest is customTest, DSTest {
         assertEq32(appCode, bytes32(0));
     }
 
-    function testValidTransfers() public logs_gas {
+    function testValidTransfer() public logs_gas {
         // transfer between two valid participants should succeed
         uint sentAmount = 250;
 
@@ -139,7 +154,7 @@ contract SecurityTokenTest is customTest, DSTest {
         assertEq(token.balanceOf(self), initialBalance - sentAmount);
     }
 
-    function testInvalidTransfersSender() public logs_gas {
+    function testInvalidTransferSender() public logs_gas {
         // transfer between from invalid sender should fail
         uint sentAmount = 250;
 
@@ -155,17 +170,65 @@ contract SecurityTokenTest is customTest, DSTest {
         assertEq(token.balanceOf(self), initialBalance);
     }
 
-    function testInvalidTransfersRecipient() public logs_gas {
+    function testInvalidTransferRecipient() public logs_gas {
         // transfer between to invalid recipient should fail
         uint sentAmount = 250;
 
-        token.rely(self);
+        bool hopeSelf = token.hope(self);
+        assertTrue(hopeSelf);
         token.deny(user1);
         bool nopeUser = token.nope(user1);
         assertTrue(nopeUser);
+        bool result = token.transfer(user1, sentAmount);
+        assertTrue(!result);
+        assertEq(token.balanceOf(user1), 0);
+        assertEq(token.balanceOf(self), initialBalance);
+    }
+
+    function testValidTransferFrom() public logs_gas {
+        // transferFrom between two valid participants should succeed
+        uint sentAmount = 250;
+        token.approve(user2, sentAmount);
+
+        token.rely(user1);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
         bool hopeSelf = token.hope(self);
         assertTrue(hopeSelf);
-        bool result = token.transfer(user1, sentAmount);
+        bool result = TokenUser(user2).doTransferFrom(self, user1, sentAmount);
+        assertTrue(result);
+        assertEq(token.balanceOf(user1), sentAmount);
+        assertEq(token.balanceOf(self), initialBalance - sentAmount);
+    }
+
+    function testInvalidTransferFromSender() public logs_gas {
+        // transferFrom from invalid sender should fail
+        uint sentAmount = 250;
+        token.approve(user2, sentAmount);
+
+        token.deny(self);
+        token.rely(user1);
+        bool nopeSelf = token.nope(self);
+        assertTrue(nopeSelf);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
+        bool result = TokenUser(user2).doTransferFrom(self, user1, sentAmount);
+        assertTrue(!result);
+        assertEq(token.balanceOf(user1), 0);
+        assertEq(token.balanceOf(self), initialBalance);
+    }
+
+    function testInvalidTransferFromRecipient() public logs_gas {
+        // transferFrom to invalid recipient should fail
+        uint sentAmount = 250;
+        token.approve(user2, sentAmount);
+
+        bool hopeSelf = token.hope(self);
+        assertTrue(hopeSelf);
+        token.deny(user1);
+        bool nopeUser = token.nope(user1);
+        assertTrue(nopeUser);
+        bool result = TokenUser(user2).doTransferFrom(self, user1, sentAmount);
         assertTrue(!result);
         assertEq(token.balanceOf(user1), 0);
         assertEq(token.balanceOf(self), initialBalance);

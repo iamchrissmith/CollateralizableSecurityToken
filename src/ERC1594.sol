@@ -61,7 +61,7 @@ contract ERC1594 is DSToken, IERC1594 {
     function _transferWithData(address _to, uint256 _value, bytes memory _data) internal returns (bool) {
         // Add a function to validate the `_data` parameter
         emit log_data("transferWithData", _data);
-        return transferFrom(msg.sender, _to, _value);
+        return super.transferFrom(msg.sender, _to, _value);
     }
 
     /**
@@ -84,7 +84,7 @@ contract ERC1594 is DSToken, IERC1594 {
     function _transferFromWithData(address _from, address _to, uint256 _value, bytes memory _data) internal returns (bool) {
         // Add a function to validate the `_data` parameter
         emit log_data("transferFromWithData", _data);
-        return transferFrom(_from, _to, _value);
+        return super.transferFrom(_from, _to, _value);
     }
 
     /**

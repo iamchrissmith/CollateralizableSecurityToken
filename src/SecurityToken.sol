@@ -55,6 +55,10 @@ contract SecurityToken is ERC1644 {
         return transfer(dst, wad, "");
     }
 
+    function transferFrom(address src, address dst, uint wad) public returns (bool) {
+        return transferFrom(src, dst, wad, "");
+    }
+
     function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
         (bool can, byte code, bytes32 appCode) = _canTransferFrom(msg.sender, dst, wad, _data);
         if (can) {
@@ -62,6 +66,24 @@ contract SecurityToken is ERC1644 {
         } else {
             emit TransferFailure(
                 msg.sender,
+                dst,
+                wad,
+                can,
+                code,
+                appCode,
+                _data
+            );
+            return can;
+        }
+    }
+
+    function transferFrom(address src, address dst, uint wad, bytes memory _data) public returns (bool) {
+        (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, _data);
+        if (can) {
+            return _transferFromWithData(src, dst, wad, _data);
+        } else {
+            emit TransferFailure(
+                src,
                 dst,
                 wad,
                 can,
@@ -110,13 +132,13 @@ contract SecurityToken is ERC1644 {
         return _canTransferFrom(_from, _to, _value, _data);
     }
 
-    function _canTransferFrom(address _from, address _to, uint256 _value, bytes memory _data) internal view returns (bool, byte, bytes32) {
-        if (nope(_from)) {
+    function _canTransferFrom(address src, address dst, uint256 wad, bytes memory _data) internal view returns (bool, byte, bytes32) {
+        if (nope(src)) {
             // 0x56 - Invalid Sender
             return (false, 0x56, bytes32(0));
         }
 
-        if (nope(_to)) {
+        if (nope(dst)) {
             // 0x57 - Invalid Reciever
             return (false, 0x57, bytes32(0));
         }
