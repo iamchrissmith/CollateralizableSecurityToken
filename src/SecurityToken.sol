@@ -58,7 +58,9 @@ contract SecurityToken is ERC1644 {
 
     function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
         (bool can, byte code, bytes32 appCode) = canTransfer(msg.sender, dst, wad, _data);
-        if (!can) {
+        if (can) {
+            return transferFrom(msg.sender, dst, wad);
+        } else {
             emit TransferFailure(
                 msg.sender,
                 dst,
@@ -69,8 +71,6 @@ contract SecurityToken is ERC1644 {
                 _data
             );
             return can;
-        } else {
-            return transferFrom(msg.sender, dst, wad);
         }
     }
 
