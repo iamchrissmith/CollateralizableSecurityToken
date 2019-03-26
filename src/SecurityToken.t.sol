@@ -140,4 +140,33 @@ contract SecurityTokenTest is customTest, DSTest {
         assertEq(token.balanceOf(user1), sentAmount);
         assertEq(token.balanceOf(self), initialBalance - sentAmount);
     }
+
+    function testInvalidTransfersSender() public logs_gas {
+        // transfer between from invalid sender should fail
+        uint sentAmount = 250;
+
+        token.deny(self);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
+        bool nopeSelf = token.nope(self);
+        assertTrue(nopeSelf);
+        token.transfer(user1, sentAmount);
+        assertEq(token.balanceOf(user1), sentAmount);
+        assertEq(token.balanceOf(self), initialBalance - sentAmount);
+    }
+
+    function testInvalidTransfersRecipient() public logs_gas {
+        // transfer between to invalid recipient should fail
+        uint sentAmount = 250;
+
+        token.rely(self);
+        token.deny(user1);
+        bool nopeUser = token.nope(user1);
+        assertTrue(nopeUser);
+        bool hopeSelf = token.hope(self);
+        assertTrue(hopeSelf);
+        token.transfer(user1, sentAmount);
+        assertEq(token.balanceOf(user1), sentAmount);
+        assertEq(token.balanceOf(self), initialBalance - sentAmount);
+    }
 }
