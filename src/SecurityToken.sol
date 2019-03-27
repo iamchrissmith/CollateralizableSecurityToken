@@ -46,7 +46,7 @@ contract SecurityToken is ERC1644 {
         bool status,
         byte code,
         bytes32 appCode,
-        bytes _data
+        bytes dat
     );
 
     constructor(address _controller, bytes32 _symbol)
@@ -61,14 +61,14 @@ contract SecurityToken is ERC1644 {
     /**
      * @notice See ERC1594.sol for detailed comments
      */
-    function transferWithData(address _to, uint256 _value, bytes calldata _data) external returns (bool) {
-        return transfer(_to, _value, _data);
+    function transferWithData(address dst, uint256 wad, bytes calldata dat) external returns (bool) {
+        return transfer(dst, wad, dat);
     }
 
-    function transfer(address dst, uint wad, bytes memory _data) public returns (bool) {
-        (bool can, byte code, bytes32 appCode) = _canTransferFrom(msg.sender, dst, wad, _data);
+    function transfer(address dst, uint wad, bytes memory dat) public returns (bool) {
+        (bool can, byte code, bytes32 appCode) = _canTransferFrom(msg.sender, dst, wad, dat);
         if (can) {
-            emit log_data("transferWithData", _data);
+            emit log_data("transferWithData", dat);
             return super.transferFrom(msg.sender, dst, wad);
         } else {
             emit TransferFailure(
@@ -79,7 +79,7 @@ contract SecurityToken is ERC1644 {
                 can,
                 code,
                 appCode,
-                _data
+                dat
             );
             return can;
         }
@@ -92,27 +92,27 @@ contract SecurityToken is ERC1644 {
     /**
      * @notice See ERC1594.sol for detailed comments
      */
-    function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external returns (bool) {
-        return transferFrom(_from, _to, _value, _data);
+    function transferFromWithData(address src, address dst, uint256 wad, bytes calldata dat) external returns (bool) {
+        return transferFrom(src, dst, wad, dat);
     }
 
     /**
      * @notice See ERC1644.sol for detailed comments
      * Have to manually reuse the transfer balance update code from ds-token as we need to bypass the src = msg.sender check for Controllers
      */
-    function controllerTransfer(address src, address dst, uint256 wad, bytes calldata _data, bytes calldata _operatorData)
+    function controllerTransfer(address src, address dst, uint256 wad, bytes calldata dat, bytes calldata _operatorData)
         external
         onlyController
         stoppable
         returns (bool)
     {
-        (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, _data);
+        (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, dat);
         if (can) {
             require(_balances[src] >= wad, "controller-security-token-insufficient-balance");
             _balances[src] = sub(_balances[src], wad);
             _balances[dst] = add(_balances[dst], wad);
 
-            emit ControllerTransfer(msg.sender, src, dst, wad, _data, _operatorData);
+            emit ControllerTransfer(msg.sender, src, dst, wad, dat, _operatorData);
 
             return true;
         } else {
@@ -124,16 +124,16 @@ contract SecurityToken is ERC1644 {
                 can,
                 code,
                 appCode,
-                _data
+                dat
             );
             return can;
         }
     }
 
-    function transferFrom(address src, address dst, uint wad, bytes memory _data) public returns (bool) {
-        (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, _data);
+    function transferFrom(address src, address dst, uint wad, bytes memory dat) public returns (bool) {
+        (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, dat);
         if (can) {
-            emit log_data("transferFromWithData", _data);
+            emit log_data("transferFromWithData", dat);
             return super.transferFrom(src, dst, wad);
         } else {
             emit TransferFailure(
@@ -144,7 +144,7 @@ contract SecurityToken is ERC1644 {
                 can,
                 code,
                 appCode,
-                _data
+                dat
             );
             return can;
         }
@@ -153,18 +153,18 @@ contract SecurityToken is ERC1644 {
     /**
      * @notice See ERC1594.sol for detailed comments
      */
-    function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
-        return _canTransferFrom(msg.sender, _to, _value, _data);
+    function canTransfer(address dst, uint256 wad, bytes calldata dat) external view returns (bool, byte, bytes32) {
+        return _canTransferFrom(msg.sender, dst, wad, dat);
     }
 
     /**
      * @notice See ERC1594.sol for detailed comments
      */
-    function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
-        return _canTransferFrom(_from, _to, _value, _data);
+    function canTransferFrom(address src, address dst, uint256 wad, bytes calldata dat) external view returns (bool, byte, bytes32) {
+        return _canTransferFrom(src, dst, wad, dat);
     }
 
-    function _canTransferFrom(address src, address dst, uint256 wad, bytes memory _data) internal view returns (bool, byte, bytes32) {
+    function _canTransferFrom(address src, address dst, uint256 wad, bytes memory dat) internal view returns (bool, byte, bytes32) {
         if (nope(src)) {
             // 0x56 - Invalid Sender
             return (false, 0x56, bytes32(0));
