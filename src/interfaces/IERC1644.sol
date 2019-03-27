@@ -8,7 +8,7 @@ pragma solidity >=0.5 <0.6.0;
 contract IERC1644 {
     // Controller Operation
     function isControllable() external view returns (bool);
-    function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external;
+    function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external returns (bool);
     function controllerRedeem(address _tokenHolder, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external;
 
     // Controller Events

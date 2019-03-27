@@ -4,9 +4,11 @@
 /// [ ] Utilize DSAuth to create a whitelist that validates transfers, transferFroms, controllerTransfers, Redeems? Mints?
 
 /*
- * This code has not been reviewed, is untested and unaudited.
- * Not recommended for mainnet.
- * Use at your own risk!
+ ******************************* IMPORTANT *******************************
+ *       This code has not been reviewed, is untested and unaudited.
+ *                      Not recommended for mainnet.
+ *                         Use at your own risk!
+ *************************************************************************
 */
 
 // This program is free software: you can redistribute it and/or modify
@@ -37,6 +39,7 @@ contract SecurityToken is ERC1644 {
     function deny(address usr) public auth { wards[usr] = 0; }
 
     event TransferFailure(
+        address indexed act,
         address indexed src,
         address indexed dst,
         uint wad,
@@ -70,6 +73,7 @@ contract SecurityToken is ERC1644 {
         } else {
             emit TransferFailure(
                 msg.sender,
+                msg.sender,
                 dst,
                 wad,
                 can,
@@ -92,6 +96,40 @@ contract SecurityToken is ERC1644 {
         return transferFrom(_from, _to, _value, _data);
     }
 
+    /**
+     * @notice See ERC1644.sol for detailed comments
+     * Have to manually reuse the transfer balance update code from ds-token as we need to bypass the src = msg.sender check for Controllers
+     */
+    function controllerTransfer(address src, address dst, uint256 wad, bytes calldata _data, bytes calldata _operatorData)
+        external
+        onlyController
+        stoppable
+        returns (bool)
+    {
+        (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, _data);
+        if (can) {
+            require(_balances[src] >= wad, "controller-security-token-insufficient-balance");
+            _balances[src] = sub(_balances[src], wad);
+            _balances[dst] = add(_balances[dst], wad);
+
+            emit ControllerTransfer(msg.sender, src, dst, wad, _data, _operatorData);
+
+            return true;
+        } else {
+            emit TransferFailure(
+                msg.sender,
+                src,
+                dst,
+                wad,
+                can,
+                code,
+                appCode,
+                _data
+            );
+            return can;
+        }
+    }
+
     function transferFrom(address src, address dst, uint wad, bytes memory _data) public returns (bool) {
         (bool can, byte code, bytes32 appCode) = _canTransferFrom(src, dst, wad, _data);
         if (can) {
@@ -99,6 +137,7 @@ contract SecurityToken is ERC1644 {
             return super.transferFrom(src, dst, wad);
         } else {
             emit TransferFailure(
+                msg.sender,
                 src,
                 dst,
                 wad,

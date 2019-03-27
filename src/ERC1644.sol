@@ -102,10 +102,7 @@ contract ERC1644 is ERC1594, IERC1644 {
      * @param _operatorData data attached to the transfer by controller to emit in event. (It is more like a reason string
      * for calling this function (aka force transfer) which provides the transparency on-chain).
      */
-    function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
-        transferFrom(_from, _to, _value);
-        emit ControllerTransfer(msg.sender, _from, _to, _value, _data, _operatorData);
-    }
+    function controllerTransfer(address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external returns (bool);
 
     /**
      * @notice This function allows an authorised address to redeem tokens for any token holder.
@@ -120,8 +117,8 @@ contract ERC1644 is ERC1594, IERC1644 {
      * for calling this function (aka force transfer) which provides the transparency on-chain).
      */
     function controllerRedeem(address _tokenHolder, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external onlyController {
-        burn(_tokenHolder, _value);
-        emit ControllerRedemption(msg.sender, _tokenHolder, _value, _data, _operatorData);
+        // burn(_tokenHolder, _value);
+        // emit ControllerRedemption(msg.sender, _tokenHolder, _value, _data, _operatorData);
     }
 
     /**

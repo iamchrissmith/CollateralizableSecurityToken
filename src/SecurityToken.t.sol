@@ -61,7 +61,26 @@ contract TokenUser {
     }
 
 }
-contract TokenController {}
+contract TokenController {
+    SecurityToken  token;
+
+    modifier tokenSet() {
+        require(address(token) != address(0));
+        _;
+    }
+
+    function setToken(SecurityToken token_) public {
+        token = token_;
+    }
+
+    function doControllerTransfer(address from, address to, uint amount, bytes memory data, bytes memory operatorData)
+        public
+        tokenSet
+        returns (bool)
+    {
+        return token.controllerTransfer(from, to, amount, data, operatorData);
+    }
+}
 
 contract customTest {
     event log_named_bytes1 (bytes32 key, bytes1 val);
@@ -81,6 +100,7 @@ contract SecurityTokenTest is customTest, DSTest {
     function setUp() public {
         controller = address(new TokenController());
         token = createToken();
+        TokenController(controller).setToken(token);
         user1 = address(new TokenUser(token));
         token.mint(initialBalance);
         user2 = address(new TokenUser(token));
@@ -176,7 +196,6 @@ contract SecurityTokenTest is customTest, DSTest {
 
         bool hopeSelf = token.hope(self);
         assertTrue(hopeSelf);
-        token.deny(user1);
         bool nopeUser = token.nope(user1);
         assertTrue(nopeUser);
         bool result = token.transfer(user1, sentAmount);
@@ -225,10 +244,56 @@ contract SecurityTokenTest is customTest, DSTest {
 
         bool hopeSelf = token.hope(self);
         assertTrue(hopeSelf);
-        token.deny(user1);
         bool nopeUser = token.nope(user1);
         assertTrue(nopeUser);
         bool result = TokenUser(user2).doTransferFrom(self, user1, sentAmount);
+        assertTrue(!result);
+        assertEq(token.balanceOf(user1), 0);
+        assertEq(token.balanceOf(self), initialBalance);
+    }
+
+    function testValidControllerTransfer() public logs_gas {
+        // transferFrom between two valid participants should succeed
+        uint sentAmount = 250;
+
+        token.rely(user1);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
+        bool hopeSelf = token.hope(self);
+        assertTrue(hopeSelf);
+        address setController = token.controller();
+        assertEq(setController, controller);
+        bool result = TokenController(controller).doControllerTransfer(self, user1, sentAmount, "", "forceTransfer by controller");
+        assertTrue(result);
+        assertEq(token.balanceOf(user1), sentAmount);
+        assertEq(token.balanceOf(self), initialBalance - sentAmount);
+    }
+
+    function testInvalidControllerTransferSender() public logs_gas {
+        // transferFrom from invalid sender should fail
+        uint sentAmount = 250;
+
+        token.deny(self);
+        token.rely(user1);
+        bool nopeSelf = token.nope(self);
+        assertTrue(nopeSelf);
+        bool hopeUser = token.hope(user1);
+        assertTrue(hopeUser);
+        bool result = TokenController(controller).doControllerTransfer(self, user1, sentAmount, "", "forceTransfer by controller");
+        assertTrue(!result);
+        assertEq(token.balanceOf(user1), 0);
+        assertEq(token.balanceOf(self), initialBalance);
+    }
+
+    function testInvalidControllerTransferRecipient() public logs_gas {
+        // transferFrom to invalid recipient should fail
+        uint sentAmount = 250;
+
+        bool hopeSelf = token.hope(self);
+        assertTrue(hopeSelf);
+        bool nopeUser = token.nope(user1);
+        assertTrue(nopeUser);
+        bool result = TokenController(controller).doControllerTransfer(self, user1, sentAmount, "", "forceTransfer by controller");
         assertTrue(!result);
         assertEq(token.balanceOf(user1), 0);
         assertEq(token.balanceOf(self), initialBalance);
