@@ -32,11 +32,9 @@ contract SecurityToken is ERC1644 {
 
     mapping (address => uint) public wards;
 
-    function hope(address usr) public view returns (bool) { return wards[usr] == 1; }
-    function nope(address usr) public view returns (bool) { return wards[usr] == 0; }
-
     function rely(address usr) public auth { wards[usr] = 1; }
     function deny(address usr) public auth { wards[usr] = 0; }
+    function allowed(address usr) public view returns (bool) { return wards[usr] == 1; }
 
     event TransferFailure(
         address indexed act,
@@ -165,12 +163,12 @@ contract SecurityToken is ERC1644 {
     }
 
     function _canTransferFrom(address src, address dst, uint256 wad, bytes memory dat) internal view returns (bool, byte, bytes32) {
-        if (nope(src)) {
+        if (!allowed(src)) {
             // 0x56 - Invalid Sender
             return (false, 0x56, bytes32(0));
         }
 
-        if (nope(dst)) {
+        if (!allowed(dst)) {
             // 0x57 - Invalid Reciever
             return (false, 0x57, bytes32(0));
         }

@@ -117,17 +117,17 @@ contract SecurityTokenTest is customTest, DSTest {
         assertEq(token.symbol(), symbol);
         assertEq(token.balanceOf(self), initialBalance);
         assertEq(token.owner(), self);
-        assertTrue(token.hope(self));
-        assertTrue(!token.hope(user1));
-        assertTrue(!token.hope(user2));
+        assertTrue(token.allowed(self));
+        assertTrue(!token.allowed(user1));
+        assertTrue(!token.allowed(user2));
     }
 
     function testRejectCanTransferBadSender() public logs_gas {
         // calling canTransfer when the sender is not on the whitelist
         // should result in false, 0x56, 0x00
         bytes1 expectedCode = 0x56;
-        bool nope = token.nope(user1);
-        assertTrue(nope);
+        bool nope = token.allowed(user1);
+        assertTrue(!nope);
         (bool result, bytes1 code, bytes32 appCode) = TokenUser(user1).doCanTransfer(user2, 1, "");
         assertTrue(!result);
         assertEq(code, expectedCode);
@@ -138,8 +138,8 @@ contract SecurityTokenTest is customTest, DSTest {
         // calling canTransfer when the recipient is not on the whitelist
         // should result in false, 0x57, 0x00
         bytes1 expectedCode = 0x57;
-        bool nope = token.nope(user2);
-        assertTrue(nope);
+        bool nope = token.allowed(user2);
+        assertTrue(!nope);
         (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user2, 1, "");
         assertTrue(!result);
         assertEq(code, expectedCode);
@@ -151,7 +151,7 @@ contract SecurityTokenTest is customTest, DSTest {
         // should result in true, 0x51, 0x00
         bytes1 expectedCode = 0x51;
         token.rely(user1);
-        bool hopeUser = token.hope(user1);
+        bool hopeUser = token.allowed(user1);
         assertTrue(hopeUser);
         (bool result, bytes1 code, bytes32 appCode) = token.canTransfer(user1, 1, "");
         assertTrue(result);
@@ -164,9 +164,9 @@ contract SecurityTokenTest is customTest, DSTest {
         uint sentAmount = 250;
 
         token.rely(user1);
-        bool hopeUser = token.hope(user1);
+        bool hopeUser = token.allowed(user1);
         assertTrue(hopeUser);
-        bool hopeSelf = token.hope(self);
+        bool hopeSelf = token.allowed(self);
         assertTrue(hopeSelf);
         bool result = token.transfer(user1, sentAmount);
         assertTrue(result);
@@ -180,9 +180,9 @@ contract SecurityTokenTest is customTest, DSTest {
 
         token.deny(self);
         token.rely(user1);
-        bool nopeSelf = token.nope(self);
-        assertTrue(nopeSelf);
-        bool hopeUser = token.hope(user1);
+        bool nopeSelf = token.allowed(self);
+        assertTrue(!nopeSelf);
+        bool hopeUser = token.allowed(user1);
         assertTrue(hopeUser);
         bool result = token.transfer(user1, sentAmount);
         assertTrue(!result);
@@ -194,10 +194,10 @@ contract SecurityTokenTest is customTest, DSTest {
         // transfer between to invalid recipient should fail
         uint sentAmount = 250;
 
-        bool hopeSelf = token.hope(self);
+        bool hopeSelf = token.allowed(self);
         assertTrue(hopeSelf);
-        bool nopeUser = token.nope(user1);
-        assertTrue(nopeUser);
+        bool nopeUser = token.allowed(user1);
+        assertTrue(!nopeUser);
         bool result = token.transfer(user1, sentAmount);
         assertTrue(!result);
         assertEq(token.balanceOf(user1), 0);
@@ -210,9 +210,9 @@ contract SecurityTokenTest is customTest, DSTest {
         token.approve(user2, sentAmount);
 
         token.rely(user1);
-        bool hopeUser = token.hope(user1);
+        bool hopeUser = token.allowed(user1);
         assertTrue(hopeUser);
-        bool hopeSelf = token.hope(self);
+        bool hopeSelf = token.allowed(self);
         assertTrue(hopeSelf);
         bool result = TokenUser(user2).doTransferFrom(self, user1, sentAmount);
         assertTrue(result);
@@ -227,9 +227,9 @@ contract SecurityTokenTest is customTest, DSTest {
 
         token.deny(self);
         token.rely(user1);
-        bool nopeSelf = token.nope(self);
-        assertTrue(nopeSelf);
-        bool hopeUser = token.hope(user1);
+        bool nopeSelf = token.allowed(self);
+        assertTrue(!nopeSelf);
+        bool hopeUser = token.allowed(user1);
         assertTrue(hopeUser);
         bool result = TokenUser(user2).doTransferFrom(self, user1, sentAmount);
         assertTrue(!result);
@@ -242,10 +242,10 @@ contract SecurityTokenTest is customTest, DSTest {
         uint sentAmount = 250;
         token.approve(user2, sentAmount);
 
-        bool hopeSelf = token.hope(self);
+        bool hopeSelf = token.allowed(self);
         assertTrue(hopeSelf);
-        bool nopeUser = token.nope(user1);
-        assertTrue(nopeUser);
+        bool nopeUser = token.allowed(user1);
+        assertTrue(!nopeUser);
         bool result = TokenUser(user2).doTransferFrom(self, user1, sentAmount);
         assertTrue(!result);
         assertEq(token.balanceOf(user1), 0);
@@ -257,9 +257,9 @@ contract SecurityTokenTest is customTest, DSTest {
         uint sentAmount = 250;
 
         token.rely(user1);
-        bool hopeUser = token.hope(user1);
+        bool hopeUser = token.allowed(user1);
         assertTrue(hopeUser);
-        bool hopeSelf = token.hope(self);
+        bool hopeSelf = token.allowed(self);
         assertTrue(hopeSelf);
         address setController = token.controller();
         assertEq(setController, controller);
@@ -275,9 +275,9 @@ contract SecurityTokenTest is customTest, DSTest {
 
         token.deny(self);
         token.rely(user1);
-        bool nopeSelf = token.nope(self);
-        assertTrue(nopeSelf);
-        bool hopeUser = token.hope(user1);
+        bool nopeSelf = token.allowed(self);
+        assertTrue(!nopeSelf);
+        bool hopeUser = token.allowed(user1);
         assertTrue(hopeUser);
         bool result = TokenController(controller).doControllerTransfer(self, user1, sentAmount, "", "forceTransfer by controller");
         assertTrue(!result);
@@ -289,10 +289,10 @@ contract SecurityTokenTest is customTest, DSTest {
         // transferFrom to invalid recipient should fail
         uint sentAmount = 250;
 
-        bool hopeSelf = token.hope(self);
+        bool hopeSelf = token.allowed(self);
         assertTrue(hopeSelf);
-        bool nopeUser = token.nope(user1);
-        assertTrue(nopeUser);
+        bool nopeUser = token.allowed(user1);
+        assertTrue(!nopeUser);
         bool result = TokenController(controller).doControllerTransfer(self, user1, sentAmount, "", "forceTransfer by controller");
         assertTrue(!result);
         assertEq(token.balanceOf(user1), 0);
